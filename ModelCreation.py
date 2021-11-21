@@ -60,12 +60,12 @@ def create_model(input_shape, weight=1e-3):
     inputs = Input(shape=input_shape)
 
 	# Conv1
-    x = Conv1D(32, kernel_size=5, strides=2, padding="valid", activation="relu", kernel_initializer="he_normal",
+    x = Conv1D(32, kernel_size=3, strides=1, padding="valid", activation="LeakyReLU", kernel_initializer="he_normal",
                kernel_regularizer=l2(weight), bias_regularizer=l2(weight))(inputs)
     x = MaxPooling1D(pool_size=3)(x)
 
 	# Conv3
-    x = Conv1D(64, kernel_size=5, strides=2, padding="valid", activation="relu", kernel_initializer="he_normal",
+    x = Conv1D(64, kernel_size=3, strides=1, padding="valid", activation="LeakyReLU", kernel_initializer="he_normal",
                kernel_regularizer=l2(1e-3), bias_regularizer=l2(weight))(x)
     x = MaxPooling1D(pool_size=3)(x)
 
@@ -93,7 +93,7 @@ def plot(history):
     fig, axes = plt.subplots(1, 2, figsize=(10, 4))
     axes[0].plot(history["loss"], "r-", history["val_loss"], "b-", linewidth=0.5)
     axes[0].set_title("Loss")
-    axes[1].plot(history["acc"], "r-", history["val_acc"], "b-", linewidth=0.5)
+    axes[1].plot(history["accuracy"], "r-", history["val_accuracy"], "b-", linewidth=0.5)
     axes[1].set_title("Accuracy")
     fig.tight_layout()
     fig.show()
@@ -112,15 +112,15 @@ if __name__ == "__main__":
     model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=['accuracy'])
 
     lr_scheduler = LearningRateScheduler(lr_schedule) # Dynamic adjustment learning rate
-    history = model.fit(x_train, y_train, batch_size=128, epochs=100, validation_data=(x_test, y_test),
+    history = model.fit(x_train, y_train, batch_size=128, epochs=10, validation_data=(x_test, y_test),
                         callbacks=[lr_scheduler])
-    model.save(os.path.join("models", "model.final.h5")) # Save training model
+    model.save(os.path.join("models1", "model.final.h5")) # Save training model
 
     loss, accuracy = model.evaluate(x_test, y_test) # test the model
     print("Test loss: ", loss)
     print("Accuracy: ", accuracy)
     y_score = model.predict(x_test)
     output = pd.DataFrame({"y_true": y_test[:, 1], "y_score": y_score[:, 1], "subject": groups_test})
-    output.to_csv(os.path.join("output", "LeNet.csv"), index=False)
+    output.to_csv("output", index=False)
 
     plot(history.history)
